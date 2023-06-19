@@ -1,5 +1,5 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { beginCell, Cell, toNano } from 'ton-core';
+import { Blockchain, SandboxContract, TreasuryContract, printTransactionFees } from '@ton-community/sandbox';
+import { beginCell, Cell, loadTransaction, toNano } from 'ton-core';
 import { Minter } from '../wrappers/Minter';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
@@ -48,7 +48,7 @@ describe('Minter', () => {
             value: toNano('0.1'),
             toAddress: user.address,
             amount: toNano('0.05'),
-            jettonAmount: toNano('100')
+            jettonAmount: toNano('100'),
         });
 
         expect(res.transactions).toHaveTransaction({
@@ -56,12 +56,13 @@ describe('Minter', () => {
             to: minter.address,
             success: true,
             op: 21,
-            outMessagesCount: 1
+            outMessagesCount: 1,
         });
 
         const newTotalSupply = await minter.getTotalSupply();
 
         expect(newTotalSupply).toEqual(toNano('100'));
+
     });
 
     it("should be able to send master messages to holder's wallet", async () => {
@@ -136,6 +137,8 @@ describe('Minter', () => {
             success: true,
         });
 
+        expect(res.transactions)
+
         const state = (await blockchain.getContract(minter.address)).accountState;
 
         if (state?.type !== 'active') throw new Error('state is not active');
@@ -144,5 +147,7 @@ describe('Minter', () => {
 
         expect(state.state.data?.equals(newDataCell)).toBeTruthy();
     });
+
+
 
 });
